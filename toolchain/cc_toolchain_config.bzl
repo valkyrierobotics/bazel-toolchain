@@ -181,15 +181,16 @@ def cc_toolchain_config(
     # always link C++ libraries.
     if not is_xcompile:
         cxx_flags = [
-            "-std=c++17",
+            "-std=gnu++17",
             "-stdlib=libc++",
         ]
         if use_lld:
             # For single-platform builds, we can statically link the bundled
             # libraries.
             link_flags.extend([
-                #"-nodefaultlibs",
+                "-nodefaultlibs",
                 "-L{}lib".format(toolchain_path_prefix),
+                "-lc",
                 "-l:libc++.a",
                 "-l:libc++abi.a",
                 "-l:libunwind.a",
@@ -203,7 +204,7 @@ def cc_toolchain_config(
             ])
         else:
             link_flags.extend([
-                #"-nodefaultlibs",
+                "-nodefaultlibs",
                 "-lc++",
                 "-lc++abi",
             ])
