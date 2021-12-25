@@ -106,17 +106,38 @@ def cc_toolchain_config(
         "-U_FORTIFY_SOURCE",  # https://github.com/google/sanitizers/issues/247
         "-fstack-protector",
         "-fno-omit-frame-pointer",
+
+        # Customization
+        "-D__STDC_FORMAT_MACROS",
+        "-D__STDC_CONSTANT_MACROS",
+        "-D__STDC_LIMIT_MACROS",
+        "-D_FILE_OFFSET_BITS=64",
+        "-fPIE",
+        "-pipe",
+        "-ggdb3",
+
         # Diagnostics
         "-fcolor-diagnostics",
+        "-fmessage-length=80",
+        "-fmacro-backtrace-limit=0",
         "-Wall",
+        "-Wextra",
+        "-Wpointer-arith",
+        "-Wstrict-aliasing",
+        "-Wcast-qual",
+        "-Wcast-align",
+        "-Wwrite-strings",
+        "-Wtype-limits",
+        "-Wsign-compare",
+        "-Wformat=2",
+        "-Werror",
         "-Wthread-safety",
         "-Wself-assign",
     ]
 
-    dbg_compile_flags = ["-g", "-fstandalone-debug"]
+    dbg_compile_flags = ["-g"]
 
     opt_compile_flags = [
-        "-g0",
         "-O2",
         "-D_FORTIFY_SOURCE=1",
         "-DNDEBUG",
@@ -129,6 +150,7 @@ def cc_toolchain_config(
         "-lm",
         "-no-canonical-prefixes",
     ]
+
     link_libs = []
 
     # Linker flags:
@@ -144,11 +166,13 @@ def cc_toolchain_config(
         # Note that for xcompiling from darwin to linux, the native ld64 is
         # not an option because it is not a cross-linker, so lld is the
         # only option.
-        use_lld = True
+        use_lld = False
         link_flags.extend([
-            "-fuse-ld=lld",
+            "-fuse-ld=gold",
             "-Wl,--build-id=md5",
             "-Wl,--hash-style=gnu",
+            "-Wl,--warn-execstack",
+            "-Wl,--detect-odr-violations",
             "-Wl,-z,relro,-z,now",
         ])
 
@@ -158,7 +182,7 @@ def cc_toolchain_config(
     if not is_xcompile:
         cxx_flags = [
             "-std=c++17",
-            "-stdlib=libc++",
+            "-stdlib=libstdc++",
         ]
         if use_lld:
             # For single-platform builds, we can statically link the bundled
@@ -177,11 +201,12 @@ def cc_toolchain_config(
                 "-ldl",
             ])
         else:
-            # TODO: Not sure how to achieve static linking of bundled libraries
-            # with ld64; maybe we don't really need it.
             link_flags.extend([
-                "-lc++",
-                "-lc++abi",
+                "-nodefaultlibs",
+                "-lstdc++",
+                "-lc",
+                "-lgcc",
+                "-lgcc_s",
             ])
     else:
         cxx_flags = [
@@ -213,6 +238,7 @@ def cc_toolchain_config(
     sysroot_prefix = ""
     if sysroot_path:
         sysroot_prefix = "%sysroot%"
+
     if target_os == "linux":
         cxx_builtin_include_directories.extend([
             sysroot_prefix + "/include",
@@ -257,7 +283,7 @@ def cc_toolchain_config(
         "cpp": tools_path_prefix + "bin/clang-cpp",
         "gcc": wrapper_bin_prefix + "bin/cc_wrapper.sh",
         "gcov": tools_path_prefix + "bin/llvm-profdata",
-        "ld": tools_path_prefix + "bin/ld.lld" if use_lld else _host_tools.get_and_assert(host_tools_info, "ld"),
+        "ld": tools_path_prefix + "bin/ld.gold",
         "llvm-cov": tools_path_prefix + "bin/llvm-cov",
         "nm": tools_path_prefix + "bin/llvm-nm",
         "objcopy": tools_path_prefix + "bin/llvm-objcopy",
@@ -273,7 +299,7 @@ def cc_toolchain_config(
     # The oldest version of LLVM that we support is 6.0.0 which was released
     # after the above patch was merged, so we just set this to `True` when
     # `lld` is being used as the linker.
-    supports_start_end_lib = use_lld
+    supports_start_end_lib = True
 
     # Source: https://cs.opensource.google/bazel/bazel/+/master:tools/cpp/unix_cc_toolchain_config.bzl
     unix_cc_toolchain_config(
