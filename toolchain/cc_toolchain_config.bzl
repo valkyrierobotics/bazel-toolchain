@@ -166,9 +166,9 @@ def cc_toolchain_config(
         # Note that for xcompiling from darwin to linux, the native ld64 is
         # not an option because it is not a cross-linker, so lld is the
         # only option.
-        use_lld = False
+        use_lld = True
         link_flags.extend([
-            "-fuse-ld=gold",
+            "-fuse-ld=lld",
             "-Wl,--build-id=md5",
             "-Wl,--hash-style=gnu",
             "-Wl,--warn-execstack",
@@ -182,12 +182,13 @@ def cc_toolchain_config(
     if not is_xcompile:
         cxx_flags = [
             "-std=c++17",
-            "-stdlib=libstdc++",
+            "-stdlib=libc++",
         ]
         if use_lld:
             # For single-platform builds, we can statically link the bundled
             # libraries.
             link_flags.extend([
+                #"-nodefaultlibs",
                 "-L{}lib".format(toolchain_path_prefix),
                 "-l:libc++.a",
                 "-l:libc++abi.a",
@@ -202,11 +203,9 @@ def cc_toolchain_config(
             ])
         else:
             link_flags.extend([
-                "-nodefaultlibs",
-                "-lstdc++",
-                "-lc",
-                "-lgcc",
-                "-lgcc_s",
+                #"-nodefaultlibs",
+                "-lc++",
+                "-lc++abi",
             ])
     else:
         cxx_flags = [
@@ -283,7 +282,7 @@ def cc_toolchain_config(
         "cpp": tools_path_prefix + "bin/clang-cpp",
         "gcc": wrapper_bin_prefix + "bin/cc_wrapper.sh",
         "gcov": tools_path_prefix + "bin/llvm-profdata",
-        "ld": tools_path_prefix + "bin/ld.gold",
+        "ld": tools_path_prefix + "bin/ld.lld" if use_lld else _host_tools.get_and_assert(host_tools_info, "ld"),
         "llvm-cov": tools_path_prefix + "bin/llvm-cov",
         "nm": tools_path_prefix + "bin/llvm-nm",
         "objcopy": tools_path_prefix + "bin/llvm-objcopy",
@@ -299,7 +298,7 @@ def cc_toolchain_config(
     # The oldest version of LLVM that we support is 6.0.0 which was released
     # after the above patch was merged, so we just set this to `True` when
     # `lld` is being used as the linker.
-    supports_start_end_lib = True
+    supports_start_end_lib = use_lld
 
     # Source: https://cs.opensource.google/bazel/bazel/+/master:tools/cpp/unix_cc_toolchain_config.bzl
     unix_cc_toolchain_config(
