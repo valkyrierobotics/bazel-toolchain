@@ -190,10 +190,12 @@ def cc_toolchain_config(
             link_flags.extend([
                 "-nodefaultlibs",
                 "-L{}lib".format(toolchain_path_prefix),
+                "-L{}lib/clang/{}/lib/linux".format(toolchain_path_prefix, llvm_version),
                 "-lc",
                 "-l:libc++.a",
                 "-l:libc++abi.a",
                 "-l:libunwind.a",
+                "-l:libclang_rt.builtins-x86_64.a",
                 # Compiler runtime features.
                 "-rtlib=compiler-rt",
             ])
