@@ -25,11 +25,11 @@ def _major_llvm_version(llvm_version):
 def _minor_llvm_version(llvm_version):
     return int(llvm_version.split(".")[1])
 
-def _darwin(llvm_version, arch):
+def _darwin(llvm_version, _arch):
     major_llvm_version = _major_llvm_version(llvm_version)
     suffix = "darwin-apple" if major_llvm_version == 9 else "apple-darwin"
-    return "clang+llvm-{llvm_version}-{arch}-{suffix}.tar.xz".format(
-        llvm_version=llvm_version, arch=arch, suffix=suffix)
+    return "clang+llvm-{llvm_version}-x86_64-{suffix}.tar.xz".format(
+        llvm_version=llvm_version, suffix=suffix)
 
 def _windows(llvm_version, arch):
     if arch.endswith('64'):
