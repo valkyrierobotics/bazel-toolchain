@@ -51,7 +51,7 @@ def arch(rctx):
     exec_result = rctx.execute([
         python(rctx),
         "-c",
-        "import platform; print(platform.machine())",
+        "print('x86_64')",
     ])
     if exec_result.return_code:
         fail("Failed to detect machine architecture: \n%s\n%s" % (exec_result.stdout, exec_result.stderr))
