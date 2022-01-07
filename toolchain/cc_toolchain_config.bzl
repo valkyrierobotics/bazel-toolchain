@@ -102,6 +102,7 @@ def cc_toolchain_config(
     # Default compiler flags:
     compile_flags = [
         "--target=" + target_system_name,
+
         # Security
         "-U_FORTIFY_SOURCE",  # https://github.com/google/sanitizers/issues/247
         "-fstack-protector",
@@ -182,7 +183,7 @@ def cc_toolchain_config(
     if not is_xcompile:
         cxx_flags = [
             "-std=gnu++17",
-            "-stdlib=libc++",
+            "-stdlib=libstdc++",
         ]
         if use_lld:
             # For single-platform builds, we can statically link the bundled
@@ -192,12 +193,9 @@ def cc_toolchain_config(
                 "-L{}lib".format(toolchain_path_prefix),
                 "-L{}lib/clang/{}/lib/linux".format(toolchain_path_prefix, llvm_version),
                 "-lc",
-                "-l:libc++.a",
-                "-l:libc++abi.a",
-                "-l:libunwind.a",
-                "-l:libclang_rt.builtins-x86_64.a",
-                # Compiler runtime features.
-                "-rtlib=compiler-rt",
+                "-lstdc++",
+                "-lgcc",
+                "-lgcc_s",
             ])
             link_libs.extend([
                 # To support libunwind.
@@ -256,6 +254,8 @@ def cc_toolchain_config(
         fail("Unreachable")
 
     cxx_builtin_include_directories.extend(additional_include_dirs)
+
+    compile_flags.extend(["-isystem " + direc for direc in cxx_builtin_include_directories])
 
     ## NOTE: make variables are missing here; unix_cc_toolchain_config doesn't
     ## pass these to `create_cc_toolchain_config_info`.
