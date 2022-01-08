@@ -183,7 +183,6 @@ def cc_toolchain_config(
     if not is_xcompile:
         cxx_flags = [
             "-std=gnu++17",
-            "-stdlib=libstdc++",
         ]
         if use_lld:
             # For single-platform builds, we can statically link the bundled
@@ -192,6 +191,7 @@ def cc_toolchain_config(
                 "-nodefaultlibs",
                 "-L{}lib".format(toolchain_path_prefix),
                 "-L{}lib/clang/{}/lib/linux".format(toolchain_path_prefix, llvm_version),
+                "-stdlib=libstdc++",
                 "-lc",
                 "-lstdc++",
                 "-lgcc",
@@ -204,6 +204,7 @@ def cc_toolchain_config(
             ])
         else:
             link_flags.extend([
+                "-stdlib=libc++",
                 "-nodefaultlibs",
                 "-lc++",
                 "-lc++abi",
