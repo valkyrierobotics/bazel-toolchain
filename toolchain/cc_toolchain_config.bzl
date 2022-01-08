@@ -255,8 +255,6 @@ def cc_toolchain_config(
 
     cxx_builtin_include_directories.extend(additional_include_dirs)
 
-    compile_flags.extend(["-isystem " + direc for direc in cxx_builtin_include_directories])
-
     ## NOTE: make variables are missing here; unix_cc_toolchain_config doesn't
     ## pass these to `create_cc_toolchain_config_info`.
 
