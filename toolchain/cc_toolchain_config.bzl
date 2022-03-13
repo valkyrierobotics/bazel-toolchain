@@ -83,7 +83,7 @@ def cc_toolchain_config(
             "clang",
             "glibc_unknown",
         ),
-        "none-arm": {
+        "none-arm": (
             "clang-arm-none-eabi",
             "arm-none-eabi",
             "arm",
