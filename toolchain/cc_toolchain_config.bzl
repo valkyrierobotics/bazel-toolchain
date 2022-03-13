@@ -83,6 +83,15 @@ def cc_toolchain_config(
             "clang",
             "glibc_unknown",
         ),
+        "none-arm": {
+            "clang-arm-none-eabi",
+            "arm-none-eabi",
+            "arm",
+            "glibc_unknown",
+            "clang",
+            "clang",
+            "glibc_unknown",
+        )
     }[target_os_arch_key]
 
     # Unfiltered compiler flags:

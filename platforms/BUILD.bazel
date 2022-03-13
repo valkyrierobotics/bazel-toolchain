@@ -37,3 +37,11 @@ platform(
         "@platforms//cpu:x86_64",
     ],
 )
+
+platform(
+    name = "arm-none",
+    constraint_values = [
+        "@platforms//os:none",
+        "@platforms//cpu:arm",
+    ],
+)
