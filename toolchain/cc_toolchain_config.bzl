@@ -97,11 +97,22 @@ def cc_toolchain_config(
         "-fdebug-prefix-map={}=__bazel_toolchain_llvm_repo__/".format(toolchain_path_prefix),
     ]
 
+    if target_toolchain_path_prefix != toolchain_path_prefix:
+	unfiltered_compile_flags.extend([
+            "-fdebug-prefix-map={}=__bazel_toolchain_llvm_repo__/".format(toolchain_path_prefix),
+    ])
+
+    resource_dir = [
+        "-resource-dir",
+	"{}lib/clang/{}}".format(target_toolchain_path_prefix, llvm_version),
+    ]
+
     is_xcompile = not (host_os == target_os and host_arch == target_arch)
 
     # Default compiler flags:
     compile_flags = [
         "--target=" + target_system_name,
+	"-B{}bin/".format(toolchain_path_prefix),
 
         # Security
         "-U_FORTIFY_SOURCE",  # https://github.com/google/sanitizers/issues/247
@@ -134,7 +145,7 @@ def cc_toolchain_config(
         "-Werror",
         "-Wthread-safety",
         "-Wself-assign",
-    ]
+    ] + resource_dir
 
     dbg_compile_flags = ["-g"]
 
